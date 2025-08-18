@@ -294,9 +294,7 @@
         async function getDeviceId() {
             let deviceId = localStorage.getItem('deviceId');
             if (!deviceId) {
-                // Se não houver, ele é gerado e salvo.
-                // Isso não deve acontecer se o validador foi usado antes.
-                deviceId = crypto.randomUUID();
+                deviceId = crypto.randomUUID(); // Gera um UUID único para o dispositivo
                 localStorage.setItem('deviceId', deviceId);
             }
             return deviceId;
@@ -305,21 +303,34 @@
         // Função principal de inicialização e validação de acesso
         async function initBossPage() {
             loadingOverlay.classList.remove('hidden'); // Mostra o loader
+            console.log("Iniciando initBossPage...");
 
             try {
                 // Autenticação anónima para interagir com o Firestore
                 await signInAnonymously(auth);
+                console.log("Autenticação anónima bem-sucedida.");
                 
                 const currentDeviceId = await getDeviceId();
+                console.log("Device ID atual:", currentDeviceId);
                 
-                const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
+                const tokensCollectionPath = `artifacts/${appId}/public/data/generatedTokens`;
+                console.log("Caminho da coleção de tokens no Firestore:", tokensCollectionPath);
+
+                const tokensCollectionRef = collection(db, tokensCollectionPath);
+                // Consulta que procura tokens vinculados a este deviceId
                 const q = query(tokensCollectionRef, where("deviceId", "==", currentDeviceId));
+                console.log("Executando query para deviceId:", currentDeviceId);
+
                 const querySnapshot = await getDocs(q);
+                console.log("Resultados da query (número de documentos):", querySnapshot.docs.length);
 
                 let accessGranted = false;
                 if (!querySnapshot.empty) {
-                    const tokenDoc = querySnapshot.docs[0];
+                    const tokenDoc = querySnapshot.docs[0]; // Pega o primeiro token encontrado
                     const tokenData = tokenDoc.data();
+                    const tokenId = tokenDoc.id; // ID do documento do token
+                    console.log("Token encontrado (ID do documento):", tokenId, "Dados do token:", tokenData);
+
                     const now = Date.now();
                     const isExpired = tokenData.expirationTimestamp <= now;
 
@@ -327,10 +338,10 @@
                         accessGranted = true;
                         console.log("Acesso concedido: Token válido e vinculado encontrado.");
                     } else {
-                        console.log("Acesso negado: Token vinculado expirado.");
+                        console.log("Acesso negado: Token vinculado expirado. Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now);
                     }
                 } else {
-                    console.log("Acesso negado: Nenhum token válido e vinculado encontrado para este dispositivo.");
+                    console.log("Acesso negado: Nenhum token válido e vinculado encontrado para este dispositivo na base de dados.");
                 }
 
                 if (accessGranted) {
@@ -338,8 +349,10 @@
                     mainContent.classList.remove('hidden'); // Mostra o conteúdo principal
                     copyrightText.classList.remove('hidden'); // Mostra os direitos autorais
                     loadMobsData(); // Carrega os dados dos mobs
+                    console.log("Conteúdo principal exibido e dados dos mobs a serem carregados.");
                 } else {
                     // Se o acesso não for concedido, redireciona para a página do validador
+                    console.log("Acesso não concedido. Redirecionando para:", `${validatorAppBaseUrl}index.html`);
                     window.location.href = `${validatorAppBaseUrl}index.html`;
                 }
 
