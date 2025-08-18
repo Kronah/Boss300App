@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss 300 - Pesquisa de Mobs</title>
+    <!-- Inclui o Tailwind CSS para estilização fácil -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Define as fontes Inter (para texto geral) e Cinzel Decorative (para títulos) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Inclui Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Fonte padrão para todo o corpo */
+            background-image:
+                url('https://lh4.googleusercontent.com/_tiEzXvf6uDRZ1x-lkpcGl8tfFogCXcT9Qo5awoc_5C6oK_bIWabqjfGxafC48vLij-g6KOKSdgQg-_0gmKn99uwOPTY69Q4cghy3irecNGVHvz5hNHy6aqd5Fv3cqln1uu0eN0EFnJJp3SJfWXa2A4'); /* Imagem de fundo do exército de Esparta */
+            background-size: cover; /* Faz a imagem cobrir todo o fundo */
+            background-position: center; /* Centraliza a imagem no fundo */
+            background-repeat: no-repeat; /* Evita que a imagem se repita */
+            background-attachment: fixed; /* Mantém a imagem fixa ao rolar */
+            display: flex; /* Para posicionar o conteúdo e o botão Sair */
+            flex-direction: column; /* Coloca os itens em coluna */
+            align-items: center; /* Centraliza horizontalmente */
+            min-height: 100vh; /* Ocupa a altura total da viewport */
+            padding: 1rem; /* Padding geral para o corpo */
+        }
+        /* Aplica a fonte "300" (Cinzel Decorative) aos títulos */
+        h1, h2 {
+            font-family: 'Cinzel Decorative', serif;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra para realçar o texto */
+        }
+        /* Estilo para painel de conteúdo */
+        .content-panel {
+            background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+            padding: 2rem; /* Espaçamento interno */
+            border-radius: 0.5rem; /* Cantos arredondados */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Sombra */
+            color: #ffffff; /* Cor do texto padrão para este painel */
+            position: relative; /* Para posicionamento de elementos internos */
+            width: 90%;
+            max-width: 800px; /* Aumentado para melhor visualização da lista */
+        }
+        /* Estilo para cada cartão de mob na lista */
+        .mob-card {
+            background-color: #ffffff; /* Fundo branco sólido */
+            border-left: 4px solid #b91c1c; /* Borda vermelha para destaque */
+            color: #1a202c; /* Cor do texto padrão para o cartão do mob */
+        }
+
+        /* Estilos para o Modal Personalizado (copiados para consistência) */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .custom-modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <!-- Container Principal da Pesquisa de Mobs -->
+    <div class="content-panel mt-16 md:mt-4 text-center">
+        <h1 class="text-3xl font-bold text-white mb-6">Boss 300 - Pesquisa de Mobs</h1>
+        <p class="text-white text-lg mb-4">Encontre seus adversários espartanos!</p>
+
+        <div class="space-y-4 mb-6">
+            <div>
+                <label for="mobSearchInput" class="block text-white text-sm font-semibold mb-2 text-left">Pesquisar por Nome ou Número</label>
+                <input
+                    type="text"
+                    id="mobSearchInput"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black"
+                    placeholder="Ex: Leonidas, 45"
+                >
+            </div>
+            <button
+                id="searchMobButton"
+                class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105"
+            >
+                <i class="fas fa-search mr-2"></i> Pesquisar Mob
+            </button>
+            <p id="searchMessage" class="text-center text-sm mt-4"></p> <!-- Elemento para exibir mensagens de feedback -->
+        </div>
+
+        <h2 class="text-2xl font-bold text-white mb-4">Resultados da Pesquisa</h2>
+        <div id="mob-list" class="space-y-4 mb-6 text-left max-h-96 overflow-y-auto p-4 rounded-md border border-gray-400">
+            <!-- Mobs serão carregados aqui -->
+            <p class="text-white text-center" id="loading-mobs-message">Carregando dados dos mobs...</p>
+        </div>
+    </div>
+
+    <!-- Direitos autorais (agora no rodapé) -->
+    <p class="text-center text-white text-xs mt-6">&copy; 2025 CaMoMiLa. Todos os direitos reservados.</p>
+
+    <!-- Modal para Alertas (copiado para consistência) -->
+    <div id="customAlertModal" class="custom-modal-overlay hidden">
+        <div class="custom-modal-content">
+            <p id="modalMessage" class="text-black text-lg mb-4"></p>
+            <button id="modalOkButton" class="bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-gray-800">OK</button>
+        </div>
+    </div>
+
+    <!-- Script JavaScript para a lógica da página -->
+    <script type="module">
+        // URL do ficheiro JSON no GitHub (RAW content)
+        const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
+        let allMobsData = []; // Para armazenar todos os dados dos mobs
+
+        // Referências aos elementos HTML
+        const mobSearchInput = document.getElementById('mobSearchInput');
+        const searchMobButton = document.getElementById('searchMobButton');
+        const mobListDiv = document.getElementById('mob-list');
+        const loadingMobsMessage = document.getElementById('loading-mobs-message');
+        const searchMessage = document.getElementById('searchMessage');
+
+        // Referências para o Modal Personalizado (simplificado para alertas)
+        const customAlertModal = document.getElementById('customAlertModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalOkButton = document.getElementById('modalOkButton');
+
+        // Função para exibir mensagens na tela (feedback para utilizador)
+        function showMessage(text, isError = false) {
+            searchMessage.textContent = text;
+            if (isError) {
+                searchMessage.className = 'text-center text-sm mt-4 text-red-600 font-medium';
+            } else {
+                searchMessage.className = 'text-center text-sm mt-4 text-green-600 font-medium';
+            }
+        }
+
+        // Função para exibir um modal de alerta personalizado
+        function customAlert(message) {
+            return new Promise((resolve) => {
+                modalMessage.textContent = message;
+                customAlertModal.classList.remove('hidden');
+                modalOkButton.onclick = () => {
+                    customAlertModal.classList.add('hidden');
+                    resolve(true);
+                };
+            });
+        }
+
+        // Função para carregar os dados do JSON
+        async function loadMobsData() {
+            loadingMobsMessage.textContent = 'Carregando dados dos mobs...';
+            try {
+                const response = await fetch(JSON_DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                allMobsData = await response.json();
+                loadingMobsMessage.classList.add('hidden');
+                showMessage('Dados dos mobs carregados com sucesso. Digite para pesquisar.', false);
+                renderMobs(allMobsData); // Renderiza todos os mobs inicialmente
+            } catch (error) {
+                console.error("Erro ao carregar dados dos mobs:", error);
+                loadingMobsMessage.textContent = 'Erro ao carregar dados dos mobs.';
+                showMessage('Erro ao carregar dados dos mobs. Verifique a consola.', true);
+                customAlert('Não foi possível carregar os dados dos mobs. Verifique sua conexão ou o URL do arquivo JSON.');
+            }
+        }
+
+        // Função para renderizar os mobs na UI
+        function renderMobs(mobs) {
+            mobListDiv.innerHTML = ''; // Limpa a lista existente
+            if (mobs.length === 0) {
+                mobListDiv.innerHTML = '<p class="text-white text-center">Nenhum mob encontrado com os critérios de pesquisa.</p>';
+                return;
+            }
+
+            mobs.forEach(mob => {
+                const mobCard = document.createElement('div');
+                mobCard.className = 'mob-card p-4 mb-2 rounded-md shadow-sm';
+                mobCard.innerHTML = `
+                    <p class="font-semibold text-black text-base break-all">Número: <span class="text-gray-800">${mob['Número'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Nome do Mob: <span class="text-gray-700">${mob['Nome do Mob'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Pontos: <span class="text-gray-700">${mob['Pontos'] !== null ? mob['Pontos'] : 'N/A'}</span></p>
+                    <p class="text-black text-sm">Arquivo: <span class="text-gray-700">${mob['Arquivo'] || 'N/A'}</span></p>
+                `;
+                mobListDiv.appendChild(mobCard);
+            });
+        }
+
+        // Função de pesquisa
+        function searchMobs() {
+            const searchTerm = mobSearchInput.value.trim().toLowerCase();
+            if (searchTerm === '') {
+                renderMobs(allMobsData); // Mostra todos se a pesquisa estiver vazia
+                showMessage('Exibindo todos os mobs.', false);
+                return;
+            }
+
+            const filteredMobs = allMobsData.filter(mob => {
+                const mobNumber = mob['Número'] ? String(mob['Número']).toLowerCase() : '';
+                const mobName = mob['Nome do Mob'] ? String(mob['Nome do Mob']).toLowerCase() : '';
+
+                return mobNumber.includes(searchTerm) || mobName.includes(searchTerm);
+            });
+
+            renderMobs(filteredMobs);
+            if (filteredMobs.length > 0) {
+                showMessage(`Encontrados ${filteredMobs.length} mobs.`, false);
+            } else {
+                showMessage('Nenhum mob encontrado com esta pesquisa.', true);
+            }
+        }
+
+        // Event Listeners
+        searchMobButton.addEventListener('click', searchMobs);
+        mobSearchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                searchMobs();
+            }
+        });
+
+        // Carrega os dados dos mobs quando a página é carregada
+        window.onload = loadMobsData;
+    </script>
+</body>
+</html>
