@@ -120,9 +120,6 @@
         import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         // Variáveis globais (adaptadas para um novo repositório, app id deve ser diferente do outro)
-        // Para este novo repositório, o appId não virá do Canvas. Usaremos um fixo ou você pode configurar um novo no Firebase.
-        // Se este app estiver em um ambiente Canvas, __app_id e __firebase_config serão fornecidos.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'bossdv-72d16-validator'; // Use um ID diferente para este app, ou o mesmo se for para o mesmo projeto Firebase.
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
             apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE", // Sua chave API do Firebase
             authDomain: "bossdv-72d16.firebaseapp.com",
@@ -133,6 +130,8 @@
             appId: "1:141528827265:web:531737e108e484a0869480" // O appId do seu projeto Firebase (pode ser o mesmo do outro app se ambos usarem o mesmo projeto)
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
+        // Usa o appId do seu projeto Firebase como fallback, garantindo consistência
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
@@ -280,6 +279,7 @@
 
                 // Tenta fazer uma query no Firestore pelo valor do token
                 const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
+                console.log(`A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`); // Log de depuração
                 const q = query(tokensCollectionRef, where("token", "==", tokenValue));
                 const querySnapshot = await getDocs(q);
 
