@@ -130,8 +130,8 @@
             appId: "1:141528827265:web:531737e108e484a0869480" // O appId do seu projeto Firebase (pode ser o mesmo do outro app se ambos usarem o mesmo projeto)
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
-        // Usa o appId do seu projeto Firebase como fallback, garantindo consistência
-        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
+        // CORREÇÃO: Usar 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
+        const appId = 'default-app-id'; 
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
