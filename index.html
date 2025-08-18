@@ -256,8 +256,9 @@
             currentDeviceId = await getDeviceId(); // Obtém ou gera o ID do dispositivo
             deviceIdDisplay.textContent = currentDeviceId;
 
-            // REMOVIDO: Lógica de verificação automática de token vinculado e redirecionamento daqui.
-            // Esta lógica agora está primariamente em boss.html.
+            // A lógica de redirecionamento automático da página de validador foi removida daqui.
+            // Ela agora está na página boss.html, que é o local correto para verificar o acesso
+            // ao seu conteúdo restrito.
         });
 
         // --- Lógica de Validação e Vínculo do Token ---
@@ -285,7 +286,7 @@
 
                 // Tenta fazer uma query no Firestore pelo valor do token
                 const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
-                console.log(`A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`); // Log de depuração
+                console.log(`[VALIDADOR] A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`); // Log de depuração
                 const q = query(tokensCollectionRef, where("token", "==", tokenValue));
                 const querySnapshot = await getDocs(q);
 
@@ -328,8 +329,10 @@
                         // Armazenar no localStorage antes de redirecionar
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        // REDIRECIONAMENTO para a página Boss 300
-                        window.location.href = `${boss300AppBaseUrl}boss.html`;
+                        // LOG: URL de redirecionamento
+                        const redirectUrl = `${boss300AppBaseUrl}boss.html`;
+                        console.log(`[VALIDADOR] Redirecionando para: ${redirectUrl}`);
+                        window.location.href = redirectUrl;
                     } else {
                         validationResultDisplay.textContent = 'Token Já Vinculado a Outro Dispositivo!';
                         validationResultDisplay.style.color = 'orange';
@@ -352,8 +355,10 @@
                         // Armazenar no localStorage após o vínculo e antes de redirecionar
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        // REDIRECIONAMENTO para a página Boss 300 após o vínculo
-                        window.location.href = `${boss300AppBaseUrl}boss.html`;
+                        // LOG: URL de redirecionamento
+                        const redirectUrl = `${boss300AppBaseUrl}boss.html`;
+                        console.log(`[VALIDADOR] Redirecionando para: ${redirectUrl}`);
+                        window.location.href = redirectUrl;
                     } else {
                         validationResultDisplay.textContent = 'Token Válido (Não Vinculado)';
                         validationResultDisplay.style.color = 'white';
