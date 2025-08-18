@@ -166,8 +166,9 @@
         const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
         let allMobsData = []; // Para armazenar todos os dados dos mobs
 
-        // URL base do repositório do Validador de Tokens (ASSUMIMOS QUE ESTÁ NO MESMO REPOSITÓRIO AGORA)
+        // URL base do repositório do Validador de Tokens (ESTE DEVE SER O URL CORRETO DA PÁGINA INDEX.HTML DO VALIDADOR)
         const validatorAppBaseUrl = 'https://kronah.github.io/Boss300App/'; // Ajuste se o validador estiver noutro repositório
+
 
         // Variáveis globais Firebase (ajustar conforme o seu projeto Firebase)
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
@@ -180,8 +181,9 @@
             appId: "1:141528827265:web:531737e108e484a0869480"
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
-        // Usa 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
-        const appId = 'default-app-id';
+        // DEFINIÇÃO CRUCIAL: Usa 'default-app-id' para coincidir com o caminho onde os tokens são guardados no Firestore.
+        // Pela imagem que me enviou, os seus tokens estão em `artifacts/default-app-id/public/data/generatedTokens`.
+        const appId = 'default-app-id'; 
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
