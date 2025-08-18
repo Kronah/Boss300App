@@ -72,11 +72,47 @@
             text-align: center;
             position: relative;
         }
+
+        /* Estilo para o loader (tela de carregamento) */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #b91c1c; /* Cor vermelha para o spinner */
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="p-4">
+    <!-- Overlay de Carregamento Inicial -->
+    <div id="loadingOverlay" class="loader-overlay">
+        <div class="spinner"></div>
+        <p>Verificando acesso...</p>
+    </div>
+
     <!-- Conteúdo Principal da Pesquisa de Mobs -->
-    <div id="mainContent" class="content-panel mt-16 md:mt-4 text-center">
+    <div id="mainContent" class="content-panel mt-16 md:mt-4 text-center hidden">
         <h1 class="text-3xl font-bold text-white mb-6">Boss 300 - Pesquisa de Mobs</h1>
         <p class="text-white text-lg mb-4">Encontre seus adversários espartanos!</p>
 
@@ -107,7 +143,7 @@
     </div>
 
     <!-- Direitos autorais (agora no rodapé) -->
-    <p class="text-center text-white text-xs mt-6" id="copyright">
+    <p class="text-center text-white text-xs mt-6 hidden" id="copyright">
         &copy; 2025 CaMoMiLa. Todos os direitos reservados.
     </p>
 
@@ -121,9 +157,36 @@
 
     <!-- Script JavaScript para a lógica da página -->
     <script type="module">
+        // Importa as funções necessárias do Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
         // URL do ficheiro JSON no GitHub (RAW content)
         const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
         let allMobsData = []; // Para armazenar todos os dados dos mobs
+
+        // URL base do repositório do Validador de Tokens (ASSUMIMOS QUE ESTÁ NO MESMO REPOSITÓRIO AGORA)
+        const validatorAppBaseUrl = 'https://kronah.github.io/Boss300App/'; // Ajuste se o validador estiver noutro repositório
+
+        // Variáveis globais Firebase (ajustar conforme o seu projeto Firebase)
+        const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
+            apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
+            authDomain: "bossdv-72d16.firebaseapp.com",
+            databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
+            projectId: "bossdv-72d16",
+            storageBucket: "bossdv-72d16.firebasestorage.app",
+            messagingSenderId: "141528827265",
+            appId: "1:141528827265:web:531737e108e484a0869480"
+        });
+        const firebaseConfig = JSON.parse(firebaseConfigString);
+        // Usa 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
+        const appId = 'default-app-id';
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // Referências aos elementos HTML
         const mobSearchInput = document.getElementById('mobSearchInput');
@@ -131,8 +194,9 @@
         const mobListDiv = document.getElementById('mob-list');
         const loadingMobsMessage = document.getElementById('loading-mobs-message');
         const searchMessage = document.getElementById('searchMessage');
-        // As referências para loadingOverlay, mainContent e copyrightText não são mais necessárias para o controle de visibilidade inicial
-        // Já que a validação foi removida, o conteúdo principal já é visível por padrão.
+        const loadingOverlay = document.getElementById('loadingOverlay'); // Overlay de carregamento
+        const mainContent = document.getElementById('mainContent');     // Conteúdo principal
+        const copyrightText = document.getElementById('copyright');     // Texto de copyright
 
         // Referências para o Modal Personalizado (simplificado para alertas)
         const customAlertModal = document.getElementById('customAlertModal');
@@ -226,6 +290,81 @@
             }
         }
 
+        // Função para obter o ID do dispositivo
+        async function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = crypto.randomUUID(); // Gera um UUID único para o dispositivo
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        // Função principal de inicialização e validação de acesso
+        async function initBossPage() {
+            loadingOverlay.classList.remove('hidden'); // Mostra o loader
+            console.log("Iniciando initBossPage (boss.html)...");
+
+            try {
+                // Autenticação anónima para interagir com o Firestore
+                await signInAnonymously(auth);
+                console.log("Autenticação anónima bem-sucedida em boss.html.");
+                
+                const currentDeviceId = await getDeviceId();
+                console.log("Device ID atual em boss.html:", currentDeviceId);
+                
+                const tokensCollectionPath = `artifacts/${appId}/public/data/generatedTokens`;
+                console.log("Caminho da coleção de tokens no Firestore (boss.html):", tokensCollectionPath);
+
+                const tokensCollectionRef = collection(db, tokensCollectionPath);
+                // Consulta que procura tokens vinculados a este deviceId
+                const q = query(tokensCollectionRef, where("deviceId", "==", currentDeviceId));
+                console.log("Executando query para deviceId em boss.html:", currentDeviceId);
+
+                const querySnapshot = await getDocs(q);
+                console.log("Resultados da query em boss.html (número de documentos):", querySnapshot.docs.length);
+
+                let accessGranted = false;
+                if (!querySnapshot.empty) {
+                    const tokenDoc = querySnapshot.docs[0]; // Pega o primeiro token encontrado
+                    const tokenData = tokenDoc.data();
+                    const tokenId = tokenDoc.id; // ID do documento do token
+                    console.log("Token encontrado em boss.html (ID do documento):", tokenId, "Dados do token:", tokenData);
+
+                    const now = Date.now();
+                    const isExpired = tokenData.expirationTimestamp <= now;
+
+                    if (!isExpired) {
+                        accessGranted = true;
+                        console.log("Acesso concedido em boss.html: Token válido e vinculado encontrado.");
+                    } else {
+                        console.log("Acesso negado em boss.html: Token vinculado expirado. Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now);
+                    }
+                } else {
+                    console.log("Acesso negado em boss.html: Nenhum token válido e vinculado encontrado para este dispositivo na base de dados.");
+                }
+
+                if (accessGranted) {
+                    loadingOverlay.classList.add('hidden'); // Esconde o loader
+                    mainContent.classList.remove('hidden'); // Mostra o conteúdo principal
+                    copyrightText.classList.remove('hidden'); // Mostra os direitos autorais
+                    loadMobsData(); // Carrega os dados dos mobs
+                    console.log("Conteúdo principal exibido em boss.html e dados dos mobs a serem carregados.");
+                } else {
+                    // Se o acesso não for concedido, redireciona para a página do validador
+                    console.log("Acesso não concedido em boss.html. Redirecionando para:", `${validatorAppBaseUrl}index.html`);
+                    window.location.href = `${validatorAppBaseUrl}index.html`;
+                }
+
+            } catch (error) {
+                console.error("Erro fatal na inicialização da página Boss 300 ou validação de acesso:", error);
+                loadingOverlay.classList.add('hidden'); // Esconde o loader
+                customAlert('Erro ao verificar o acesso. Redirecionando para o validador. Verifique a consola.');
+                // Redireciona em caso de erro grave durante a verificação
+                window.location.href = `${validatorAppBaseUrl}index.html`;
+            }
+        }
+
         // Event Listeners
         searchMobButton.addEventListener('click', searchMobs);
         mobSearchInput.addEventListener('keyup', (event) => {
@@ -234,8 +373,8 @@
             }
         });
 
-        // Carrega os dados dos mobs quando a página é carregada (agora sem validação prévia)
-        window.onload = loadMobsData;
+        // Inicia a validação de acesso quando a página é carregada
+        window.onload = initBossPage;
     </script>
 </body>
 </html>
