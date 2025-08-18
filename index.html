@@ -130,8 +130,10 @@
             appId: "1:141528827265:web:531737e108e484a0869480" // O appId do seu projeto Firebase (pode ser o mesmo do outro app se ambos usarem o mesmo projeto)
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
-        // CORREÇÃO: Usar 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
-        const appId = 'default-app-id'; 
+        const appId = 'default-app-id'; // Usar 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
+
+        // URL base do repositório Boss 300 (AJUSTE ESTA URL para o seu novo repositório se for diferente)
+        const boss300AppBaseUrl = 'https://kronah.github.io/Boss300App/'; // Exemplo: https://SEU_USUARIO.github.io/SEU_REPOSITORIO_BOSS/
 
         // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
@@ -316,6 +318,8 @@
                         validationResultDisplay.textContent = 'Token Válido e Vinculado a este Dispositivo!';
                         validationResultDisplay.style.color = 'lime'; // Cor verde vibrante
                         showMessage('Você pode continuar a usar este token.', false);
+                        // REDIRECIONAMENTO para a página Boss 300
+                        window.location.href = `${boss300AppBaseUrl}boss.html`;
                     } else {
                         validationResultDisplay.textContent = 'Token Já Vinculado a Outro Dispositivo!';
                         validationResultDisplay.style.color = 'orange';
@@ -332,6 +336,8 @@
                         validationResultDisplay.textContent = 'Token Vinculado com Sucesso a este Dispositivo!';
                         validationResultDisplay.style.color = 'lime';
                         showMessage('O token agora está vinculado a este dispositivo e não pode ser usado em outro.', false);
+                        // REDIRECIONAMENTO para a página Boss 300 após o vínculo
+                        window.location.href = `${boss300AppBaseUrl}boss.html`;
                     } else {
                         validationResultDisplay.textContent = 'Token Válido (Não Vinculado)';
                         validationResultDisplay.style.color = 'white';
