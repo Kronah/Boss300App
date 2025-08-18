@@ -244,6 +244,7 @@
                 try {
                     await signInAnonymously(auth);
                     user = auth.currentUser; // Atualiza o objeto user após a autenticação anónima
+                    console.log("Sessão anónima iniciada."); // Log de depuração
                 } catch (error) {
                     console.error("Erro na autenticação anónima:", error);
                     showMessage('Erro na autenticação. Por favor, tente novamente.', true);
@@ -255,37 +256,8 @@
             currentDeviceId = await getDeviceId(); // Obtém ou gera o ID do dispositivo
             deviceIdDisplay.textContent = currentDeviceId;
 
-            // NOVA LÓGICA: Verificar se já existe um token válido vinculado a este ID de dispositivo
-            try {
-                const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
-                const q = query(tokensCollectionRef, where("deviceId", "==", currentDeviceId));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    const tokenDoc = querySnapshot.docs[0];
-                    const tokenData = tokenDoc.data();
-                    const now = Date.now();
-                    const isExpired = tokenData.expirationTimestamp <= now;
-
-                    if (!isExpired) {
-                        // Token válido e vinculado encontrado! Redirecionar automaticamente.
-                        console.log("Token válido e vinculado encontrado para este dispositivo. Redirecionando...");
-                        // Armazenar no localStorage antes de redirecionar
-                        localStorage.setItem('lastValidatedToken', tokenData.token);
-                        localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        window.location.href = `${boss300AppBaseUrl}boss.html`;
-                        return; // Impede a execução do restante do script nesta página
-                    } else {
-                        console.log("Token vinculado encontrado, mas expirado. Prosseguindo com a validação manual.");
-                        // Limpar o token expirado do localStorage para forçar uma nova validação/vinculação
-                        localStorage.removeItem('lastValidatedToken');
-                        localStorage.removeItem('lastValidatedDeviceId');
-                    }
-                }
-            } catch (error) {
-                console.error("Erro ao verificar token vinculado automaticamente:", error);
-                showMessage('Erro ao verificar token vinculado. Tente manualmente.', true);
-            }
+            // REMOVIDO: Lógica de verificação automática de token vinculado e redirecionamento daqui.
+            // Esta lógica agora está primariamente em boss.html.
         });
 
         // --- Lógica de Validação e Vínculo do Token ---
