@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Token - Acesso aos 300</title>
+    <title>Boss 300 - Acesso e Pesquisa</title>
     <!-- Inclui o Tailwind CSS para estilização fácil -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Define as fontes Inter (para texto geral) e Cinzel Decorative (para títulos) -->
@@ -19,11 +19,12 @@
             background-position: center; /* Centraliza a imagem no fundo */
             background-repeat: no-repeat; /* Evita que a imagem se repita */
             background-attachment: fixed; /* Mantém a imagem fixa ao rolar */
-            display: flex; /* Para posicionar o conteúdo e o botão Sair */
-            flex-direction: column; /* Coloca os itens em coluna */
-            align-items: center; /* Centraliza horizontalmente */
-            min-height: 100vh; /* Ocupa a altura total da viewport */
-            padding: 1rem; /* Padding geral para o corpo */
+            display: flex; /* Para posicionar o conteúdo */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Centraliza verticalmente o conteúdo */
+            min-height: 100vh;
+            padding: 1rem;
         }
         /* Aplica a fonte "300" (Cinzel Decorative) aos títulos */
         h1, h2 {
@@ -39,10 +40,16 @@
             color: #ffffff; /* Cor do texto padrão para este painel */
             position: relative; /* Para posicionamento de elementos internos */
             width: 90%;
-            max-width: 500px;
+            max-width: 800px; /* Aumentado para melhor visualização da lista */
+        }
+        /* Estilo para cada cartão de mob na lista */
+        .mob-card {
+            background-color: #ffffff; /* Fundo branco sólido */
+            border-left: 4px solid #b91c1c; /* Borda vermelha para destaque */
+            color: #1a202c; /* Cor do texto padrão para o cartão do mob */
         }
 
-        /* Estilos para o Modal Personalizado */
+        /* Estilos para o Modal Personalizado (copiados para consistência) */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -65,39 +72,119 @@
             text-align: center;
             position: relative;
         }
+
+        /* Estilo para o loader (tela de carregamento) */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #b91c1c; /* Cor vermelha para o spinner */
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="p-4">
-    <!-- Container Principal do Validador -->
-    <div class="content-panel mt-16 md:mt-4 text-center">
-        <h1 class="text-3xl font-bold text-white mb-6">Validador de Token</h1>
-        <p class="text-white text-lg mb-4" id="user-info">Aguardando autenticação...</p>
-        <p class="text-white text-sm mb-4">Seu ID de Dispositivo: <span id="device-id-display" class="font-semibold break-all">Carregando...</span></p>
-
-        <div class="space-y-4 mb-6">
-            <div>
-                <label for="tokenInput" class="block text-white text-sm font-semibold mb-2 text-left">Insira seu Token</label>
-                <input
-                    type="text"
-                    id="tokenInput"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black"
-                    placeholder="Seu token único"
-                >
-            </div>
-            <button
-                id="validateTokenButton"
-                class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105"
-            >
-                Validar Token
-            </button>
-            <p id="validationResult" class="text-center text-white text-base mt-4 font-semibold break-all"></p>
-            <p id="tokenDetails" class="text-center text-white text-sm mt-2"></p>
-            <p id="message" class="text-center text-sm mt-4"></p> <!-- Elemento para exibir mensagens de feedback -->
-        </div>
+    <!-- Overlay de Carregamento Inicial -->
+    <div id="loadingOverlay" class="loader-overlay">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
     </div>
 
-    <!-- Direitos autorais (agora no rodapé) -->
-    <p class="text-center text-white text-xs mt-6">&copy; 2025 CaMoMiLa. Todos os direitos reservados.</p>
+    <!-- Container Principal do App Combinado -->
+    <div id="combinedAppContent" class="content-panel mt-16 md:mt-4 text-center hidden">
+        <!-- Seção do Validador de Token (Visível para não autenticados/sem token) -->
+        <div id="validatorSection">
+            <h1 class="text-3xl font-bold text-white mb-6">Validador de Token</h1>
+            <p class="text-white text-lg mb-4" id="user-info-validator">Aguardando autenticação...</p>
+            <p class="text-white text-sm mb-4">Seu ID de Dispositivo: <span id="device-id-display" class="font-semibold break-all">Carregando...</span></p>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="tokenInput" class="block text-white text-sm font-semibold mb-2 text-left">Insira seu Token</label>
+                    <input
+                        type="text"
+                        id="tokenInput"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black"
+                        placeholder="Seu token único"
+                    >
+                </div>
+                <button
+                    id="validateTokenButton"
+                    class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105"
+                >
+                    Validar Token
+                </button>
+                <p id="validationResult" class="text-center text-white text-base mt-4 font-semibold break-all"></p>
+                <p id="tokenDetails" class="text-center text-white text-sm mt-2"></p>
+                <p id="message-validator" class="text-center text-sm mt-4"></p> <!-- Elemento para exibir mensagens de feedback -->
+            </div>
+        </div>
+
+        <!-- Seção da Pesquisa de Mobs (Visível após validação do token) -->
+        <div id="bossSearchSection" class="hidden">
+            <h1 class="text-3xl font-bold text-white mb-6">Boss 300 - Pesquisa de Mobs</h1>
+            <p class="text-white text-lg mb-4">Encontre seus adversários espartanos!</p>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="mobSearchInput" class="block text-white text-sm font-semibold mb-2 text-left">Pesquisar por Nome ou Número</label>
+                    <input
+                        type="text"
+                        id="mobSearchInput"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black"
+                        placeholder="Ex: Leonidas, 45"
+                    >
+                </div>
+                <button
+                    id="searchMobButton"
+                    class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105"
+                >
+                    <i class="fas fa-search mr-2"></i> Pesquisar Mob
+                </button>
+                <p id="searchMessage" class="text-center text-sm mt-4"></p> <!-- Elemento para exibir mensagens de feedback -->
+            </div>
+
+            <h2 class="text-2xl font-bold text-white mb-4">Resultados da Pesquisa</h2>
+            <div id="mob-list" class="space-y-4 mb-6 text-left max-h-96 overflow-y-auto p-4 rounded-md border border-gray-400">
+                <!-- Mobs serão carregados aqui -->
+                <p class="text-white text-center" id="loading-mobs-message">Carregando dados dos mobs...</p>
+            </div>
+        </div>
+        
+        <!-- Botão Sair (aparece quando o acesso é concedido) -->
+        <button
+            id="logoutButton"
+            class="mt-4 bg-gray-700 text-white py-2 px-6 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 transition duration-300 transform hover:scale-105 hidden"
+        >
+            Sair
+        </button>
+    </div>
+
+    <!-- Direitos autorais -->
+    <p class="text-center text-white text-xs mt-6" id="copyright">
+        &copy; 2025 CaMoMiLa. Todos os direitos reservados.
+    </p>
 
     <!-- Modal para Confirmação e Alertas -->
     <div id="customConfirmModal" class="custom-modal-overlay hidden">
@@ -112,44 +199,56 @@
         </div>
     </div>
 
-    <!-- Firebase SDK e Lógica da Aplicação -->
+    <!-- Script JavaScript para a lógica da aplicação combinada -->
     <script type="module">
-        // Importa as funções necessárias do Firebase
+        console.clear(); // Limpa o console do navegador para depuração mais fácil
+
+        // --- Firebase Setup ---
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
         import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-        // Variáveis globais (adaptadas para um novo repositório, app id deve ser diferente do outro)
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
-            apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE", // Sua chave API do Firebase
+            apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
             authDomain: "bossdv-72d16.firebaseapp.com",
             databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
             projectId: "bossdv-72d16",
             storageBucket: "bossdv-72d16.firebasestorage.app",
             messagingSenderId: "141528827265",
-            appId: "1:141528827265:web:531737e108e484a0869480" // O appId do seu projeto Firebase (pode ser o mesmo do outro app se ambos usarem o mesmo projeto)
+            appId: "1:141528827265:web:531737e108e484a0869480"
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
-        const appId = 'default-app-id'; // Usar 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
+        const appId = 'default-app-id'; // Consistente com a estrutura do Firestore
 
-        // URL base do repositório Boss 300 (AJUSTE ESTA URL para o seu novo repositório se for diferente)
-        const boss300AppBaseUrl = 'https://kronah.github.io/Boss300App/'; // Exemplo: https://SEU_USUARIO.github.io/SEU_REPOSITORIO_BOSS/
-
-        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Referências aos elementos HTML
-        const userInfoDisplay = document.getElementById('user-info');
+        // --- Elementos HTML ---
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const combinedAppContent = document.getElementById('combinedAppContent');
+        const validatorSection = document.getElementById('validatorSection');
+        const bossSearchSection = document.getElementById('bossSearchSection');
+        const copyrightText = document.getElementById('copyright');
+        
+        // Validador de Token Elements
+        const userInfoValidator = document.getElementById('user-info-validator');
         const deviceIdDisplay = document.getElementById('device-id-display');
         const tokenInput = document.getElementById('tokenInput');
         const validateTokenButton = document.getElementById('validateTokenButton');
         const validationResultDisplay = document.getElementById('validationResult');
         const tokenDetailsDisplay = document.getElementById('tokenDetails');
-        const messageDisplay = document.getElementById('message');
+        const messageValidator = document.getElementById('message-validator');
 
-        // Referências para o Modal Personalizado (copiado do outro app)
+        // Pesquisa de Mobs Elements
+        const mobSearchInput = document.getElementById('mobSearchInput');
+        const searchMobButton = document.getElementById('searchMobButton');
+        const mobListDiv = document.getElementById('mob-list');
+        const loadingMobsMessage = document.getElementById('loading-mobs-message');
+        const searchMessage = document.getElementById('searchMessage');
+        const logoutButton = document.getElementById('logoutButton'); // Novo botão Sair
+
+        // Modal Elements
         const customConfirmModal = document.getElementById('customConfirmModal');
         const modalMessage = document.getElementById('modalMessage');
         const modalInput = document.getElementById('modalInput');
@@ -157,17 +256,19 @@
         const modalCancelButton = document.getElementById('modalCancelButton');
         const modalButtons = document.getElementById('modalButtons');
 
+        // --- Global Variables ---
+        let currentDeviceId = '';
+        let allMobsData = []; // Para armazenar todos os dados dos mobs
+        const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
 
-        let currentDeviceId = ''; // Para armazenar o ID único do dispositivo
+        // --- Utility Functions ---
 
-        // --- Funções de UI e Mensagens ---
-
-        function showMessage(text, isError = false) {
-            messageDisplay.textContent = text;
+        function showMessage(text, isError = false, targetElement = messageValidator) {
+            targetElement.textContent = text;
             if (isError) {
-                messageDisplay.className = 'text-center text-sm mt-4 text-red-600 font-medium';
+                targetElement.className = 'text-center text-sm mt-4 text-red-600 font-medium';
             } else {
-                messageDisplay.className = 'text-center text-sm mt-4 text-green-600 font-medium';
+                targetElement.className = 'text-center text-sm mt-4 text-green-600 font-medium';
             }
         }
 
@@ -176,7 +277,6 @@
             return `${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR')}`;
         }
 
-        // Função para exibir um modal de confirmação/alerta ou prompt personalizado
         function customModal(message, type = 'alert', inputOptions = {}) {
             return new Promise((resolve) => {
                 modalMessage.textContent = message;
@@ -227,81 +327,173 @@
             });
         }
 
-        // --- Lógica de Autenticação e ID do Dispositivo ---
-
         async function getDeviceId() {
             let deviceId = localStorage.getItem('deviceId');
             if (!deviceId) {
-                deviceId = crypto.randomUUID(); // Gera um UUID único para o dispositivo
+                deviceId = crypto.randomUUID();
                 localStorage.setItem('deviceId', deviceId);
             }
             return deviceId;
         }
 
+        // --- Firebase Auth State Listener ---
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                // Autenticação anónima para permitir acesso ao Firestore para validação
                 try {
                     await signInAnonymously(auth);
-                    user = auth.currentUser; // Atualiza o objeto user após a autenticação anónima
-                    console.log("Sessão anónima iniciada."); // Log de depuração
+                    user = auth.currentUser;
+                    console.log("Sessão anónima iniciada.");
                 } catch (error) {
                     console.error("Erro na autenticação anónima:", error);
                     showMessage('Erro na autenticação. Por favor, tente novamente.', true);
-                    userInfoDisplay.textContent = 'Erro ao carregar sessão.';
+                    userInfoValidator.textContent = 'Erro ao carregar sessão.';
                     return;
                 }
             }
-            userInfoDisplay.textContent = `Sessão Iniciada como: ${user.isAnonymous ? 'Anónimo' : user.email}`;
-            currentDeviceId = await getDeviceId(); // Obtém ou gera o ID do dispositivo
+            userInfoValidator.textContent = `Sessão Iniciada como: ${user.isAnonymous ? 'Anónimo' : user.email}`;
+            currentDeviceId = await getDeviceId();
             deviceIdDisplay.textContent = currentDeviceId;
 
-            // A lógica de redirecionamento automático da página de validador foi removida daqui.
-            // Ela agora está na página boss.html, que é o local correto para verificar o acesso
-            // ao seu conteúdo restrito.
+            // Após a autenticação, tenta validar o acesso via localStorage/Firestore
+            initCombinedApp();
         });
 
-        // --- Lógica de Validação e Vínculo do Token ---
+        // --- Core Application Logic ---
 
+        // Function to switch between validator and boss search views
+        function showAccessGrantedView() {
+            validatorSection.classList.add('hidden');
+            bossSearchSection.classList.remove('hidden');
+            logoutButton.classList.remove('hidden'); // Mostra o botão Sair
+            loadMobsData(); // Carrega os dados dos mobs quando o acesso é concedido
+        }
+
+        function showValidatorView() {
+            validatorSection.classList.remove('hidden');
+            bossSearchSection.classList.add('hidden');
+            logoutButton.classList.add('hidden'); // Esconde o botão Sair
+            tokenInput.value = ''; // Limpa o campo do token
+            validationResultDisplay.textContent = '';
+            tokenDetailsDisplay.textContent = '';
+            messageValidator.textContent = '';
+            localStorage.removeItem('lastValidatedToken');
+            localStorage.removeItem('lastValidatedDeviceId');
+        }
+
+        async function initCombinedApp() {
+            loadingOverlay.classList.remove('hidden'); // Always show loader at start
+            console.log("--- Iniciando initCombinedApp ---");
+
+            try {
+                const currentDeviceId = await getDeviceId();
+                const lastValidatedToken = localStorage.getItem('lastValidatedToken');
+                const lastValidatedDeviceId = localStorage.getItem('lastValidatedDeviceId');
+
+                console.log("1. Device ID do localStorage (currentDeviceId):", currentDeviceId);
+                console.log("2. Token do localStorage (lastValidatedToken):", lastValidatedToken);
+                console.log("3. Device ID do localStorage (lastValidatedDeviceId):", lastValidatedDeviceId);
+
+                let accessGranted = false;
+
+                if (lastValidatedToken && lastValidatedDeviceId === currentDeviceId) {
+                    console.log("4. Dados de validação encontrados no localStorage. Verificando no Firestore...");
+                    
+                    const tokensCollectionPath = `artifacts/${appId}/public/data/generatedTokens`;
+                    const tokensCollectionRef = collection(db, tokensCollectionPath);
+                    
+                    const q = query(
+                        tokensCollectionRef, 
+                        where("token", "==", lastValidatedToken),
+                        where("deviceId", "==", currentDeviceId)
+                    );
+                    console.log("5. Executando query no Firestore com token E deviceId. Token:", lastValidatedToken, "DeviceId:", currentDeviceId);
+
+                    const querySnapshot = await getDocs(q);
+                    console.log("6. Resultados da query (número de documentos encontrados):", querySnapshot.docs.length);
+
+                    if (!querySnapshot.empty) {
+                        const tokenDoc = querySnapshot.docs[0];
+                        const tokenData = tokenDoc.data();
+                        console.log("7. Dados completos do token do Firestore:", tokenData);
+                        
+                        const now = Date.now();
+                        const isExpired = tokenData.expirationTimestamp <= now;
+                        console.log("8. Verificando expiração: Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now, "Expirado?", isExpired);
+
+                        if (!isExpired) {
+                            accessGranted = true;
+                            console.log("9. Acesso concedido: Token válido e vinculado encontrado no Firestore via localStorage.");
+                        } else {
+                            console.log("9. Acesso negado: Token do localStorage expirado no Firestore. Limpando localStorage.");
+                            localStorage.removeItem('lastValidatedToken');
+                            localStorage.removeItem('lastValidatedDeviceId');
+                        }
+                    } else {
+                        console.log("6. Acesso negado: Token do localStorage não encontrado ou deviceId não corresponde no Firestore. Limpando localStorage.");
+                        localStorage.removeItem('lastValidatedToken');
+                        localStorage.removeItem('lastValidatedDeviceId');
+                    }
+                } else {
+                    console.log("4. Dados de validação ausentes ou inconsistentes no localStorage. Exibindo validador.");
+                }
+
+                if (accessGranted) {
+                    showAccessGrantedView();
+                    console.log("10. Exibindo tela de pesquisa de mobs.");
+                } else {
+                    showValidatorView();
+                    console.log("10. Exibindo tela do validador de token.");
+                }
+
+                loadingOverlay.classList.add('hidden'); // Hide loader once init is done
+                combinedAppContent.classList.remove('hidden'); // Show main content
+            } catch (error) {
+                console.error("ERRO FATAL (initCombinedApp):", error);
+                loadingOverlay.classList.add('hidden');
+                customModal('Erro ao iniciar. Por favor, recarregue a página. Verifique a consola para detalhes.', 'alert');
+                showValidatorView(); // Fallback to validator view
+                combinedAppContent.classList.remove('hidden'); // Show main content
+            }
+        }
+
+        // --- Token Validation Logic (from index.html) ---
         validateTokenButton.addEventListener('click', async () => {
             const tokenValue = tokenInput.value.trim();
             validationResultDisplay.textContent = '';
             tokenDetailsDisplay.textContent = '';
-            showMessage('');
+            showMessage(''); // Clear previous messages
 
             if (!tokenValue) {
-                showMessage('Por favor, insira um token para validar.', true);
+                showMessage('Por favor, insira um token para validar.', true, messageValidator);
                 return;
             }
 
             try {
-                // Decodifica o token (simplesmente inverte a codificação base64)
                 let decodedToken;
                 try {
                     decodedToken = atob(tokenValue);
                 } catch (e) {
-                    showMessage('Token inválido. Formato incorreto (Base64).', true);
+                    showMessage('Token inválido. Formato incorreto (Base64).', true, messageValidator);
                     return;
                 }
 
-                // Tenta fazer uma query no Firestore pelo valor do token
                 const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
-                console.log(`[VALIDADOR] A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`); // Log de depuração
+                console.log(`[VALIDADOR] A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`);
                 const q = query(tokensCollectionRef, where("token", "==", tokenValue));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    showMessage('Token não encontrado. Verifique o valor.', true);
+                    showMessage('Token não encontrado. Verifique o valor.', true, messageValidator);
                     return;
                 }
 
                 const tokenDoc = querySnapshot.docs[0];
                 const tokenData = tokenDoc.data();
-                const tokenId = tokenDoc.id; // ID do documento no Firestore
+                const tokenId = tokenDoc.id;
 
                 const now = Date.now();
                 const isExpired = tokenData.expirationTimestamp <= now;
-                const isLinked = !!tokenData.deviceId; // Verifica se já tem um deviceId
+                const isLinked = !!tokenData.deviceId;
 
                 tokenDetailsDisplay.innerHTML = `
                     Nome: ${tokenData.userName}<br>
@@ -314,8 +506,7 @@
                 if (isExpired) {
                     validationResultDisplay.textContent = 'Token Expirado!';
                     validationResultDisplay.style.color = 'red';
-                    showMessage('Este token não é mais válido.', true);
-                    // Limpar localStorage se o token validado manualmente estiver expirado
+                    showMessage('Este token não é mais válido.', true, messageValidator);
                     localStorage.removeItem('lastValidatedToken');
                     localStorage.removeItem('lastValidatedDeviceId');
                     return;
@@ -324,25 +515,19 @@
                 if (isLinked) {
                     if (tokenData.deviceId === currentDeviceId) {
                         validationResultDisplay.textContent = 'Token Válido e Vinculado a este Dispositivo!';
-                        validationResultDisplay.style.color = 'lime'; // Cor verde vibrante
-                        showMessage('Você pode continuar a usar este token.', false);
-                        // Armazenar no localStorage antes de redirecionar
+                        validationResultDisplay.style.color = 'lime';
+                        showMessage('Você pode continuar a usar este token.', false, messageValidator);
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        // LOG: URL de redirecionamento
-                        const redirectUrl = `${boss300AppBaseUrl}boss.html`;
-                        console.log(`[VALIDADOR] Redirecionando para: ${redirectUrl}`);
-                        window.location.href = redirectUrl;
+                        showAccessGrantedView(); // Show boss search section
                     } else {
                         validationResultDisplay.textContent = 'Token Já Vinculado a Outro Dispositivo!';
                         validationResultDisplay.style.color = 'orange';
-                        showMessage('Este token não pode ser usado aqui.', true);
-                        // Limpar localStorage se o token validado manualmente estiver vinculado a outro deviceId
+                        showMessage('Este token não pode ser usado aqui.', true, messageValidator);
                         localStorage.removeItem('lastValidatedToken');
                         localStorage.removeItem('lastValidatedDeviceId');
                     }
                 } else {
-                    // Token válido e NÃO vinculado: Vincular ao dispositivo atual
                     const confirmLink = await customModal('Este token é válido e não está vinculado. Deseja vinculá-lo a este dispositivo?', 'confirm');
                     if (confirmLink) {
                         await updateDoc(doc(db, `artifacts/${appId}/public/data/generatedTokens`, tokenId), {
@@ -351,19 +536,14 @@
                         });
                         validationResultDisplay.textContent = 'Token Vinculado com Sucesso a este Dispositivo!';
                         validationResultDisplay.style.color = 'lime';
-                        showMessage('O token agora está vinculado a este dispositivo e não pode ser usado em outro.', false);
-                        // Armazenar no localStorage após o vínculo e antes de redirecionar
+                        showMessage('O token agora está vinculado a este dispositivo e não pode ser usado em outro.', false, messageValidator);
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        // LOG: URL de redirecionamento
-                        const redirectUrl = `${boss300AppBaseUrl}boss.html`;
-                        console.log(`[VALIDADOR] Redirecionando para: ${redirectUrl}`);
-                        window.location.href = redirectUrl;
+                        showAccessGrantedView(); // Show boss search section
                     } else {
                         validationResultDisplay.textContent = 'Token Válido (Não Vinculado)';
                         validationResultDisplay.style.color = 'white';
-                        showMessage('Você optou por não vincular o token. Ele ainda pode ser usado em outros dispositivos.', false);
-                        // Limpar localStorage se o token não for vinculado
+                        showMessage('Você optou por não vincular o token. Ele ainda pode ser usado em outros dispositivos.', false, messageValidator);
                         localStorage.removeItem('lastValidatedToken');
                         localStorage.removeItem('lastValidatedDeviceId');
                     }
@@ -373,12 +553,92 @@
                 console.error("Erro na validação do token:", error);
                 validationResultDisplay.textContent = 'Erro ao validar o token.';
                 validationResultDisplay.style.color = 'red';
-                showMessage(`Erro inesperado: ${error.message}`, true);
-                // Limpar localStorage em caso de erro na validação
+                showMessage(`Erro inesperado: ${error.message}`, true, messageValidator);
                 localStorage.removeItem('lastValidatedToken');
                 localStorage.removeItem('lastValidatedDeviceId');
             }
         });
+
+        // --- Mob Search Logic (from boss.html) ---
+
+        async function loadMobsData() {
+            loadingMobsMessage.textContent = 'Carregando dados dos mobs...';
+            try {
+                const response = await fetch(JSON_DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                allMobsData = await response.json();
+                loadingMobsMessage.classList.add('hidden');
+                showMessage('Dados dos mobs carregados com sucesso. Digite para pesquisar.', false, searchMessage);
+                renderMobs(allMobsData);
+            } catch (error) {
+                console.error("Erro ao carregar dados dos mobs:", error);
+                loadingMobsMessage.textContent = 'Erro ao carregar dados dos mobs.';
+                showMessage('Erro ao carregar dados dos mobs. Verifique a consola.', true, searchMessage);
+                customModal('Não foi possível carregar os dados dos mobs. Verifique sua conexão ou o URL do arquivo JSON.', 'alert');
+            }
+        }
+
+        function renderMobs(mobs) {
+            mobListDiv.innerHTML = '';
+            if (mobs.length === 0) {
+                mobListDiv.innerHTML = '<p class="text-white text-center">Nenhum mob encontrado com os critérios de pesquisa.</p>';
+                return;
+            }
+
+            mobs.forEach(mob => {
+                const mobCard = document.createElement('div');
+                mobCard.className = 'mob-card p-4 mb-2 rounded-md shadow-sm';
+                mobCard.innerHTML = `
+                    <p class="font-semibold text-black text-base break-all">Número: <span class="text-gray-800">${mob['Número'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Nome do Mob: <span class="text-gray-700">${mob['Nome do Mob'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Pontos: <span class="text-gray-700">${mob['Pontos'] !== null ? mob['Pontos'] : 'N/A'}</span></p>
+                    <p class="text-black text-sm">Arquivo: <span class="text-gray-700">${mob['Arquivo'] || 'N/A'}</span></p>
+                `;
+                mobListDiv.appendChild(mobCard);
+            });
+        }
+
+        function searchMobs() {
+            const searchTerm = mobSearchInput.value.trim().toLowerCase();
+            if (searchTerm === '') {
+                renderMobs(allMobsData);
+                showMessage('Exibindo todos os mobs.', false, searchMessage);
+                return;
+            }
+
+            const filteredMobs = allMobsData.filter(mob => {
+                const mobNumber = mob['Número'] ? String(mob['Número']).toLowerCase() : '';
+                const mobName = mob['Nome do Mob'] ? String(mob['Nome do Mob']).toLowerCase() : '';
+
+                return mobNumber.includes(searchTerm) || mobName.includes(searchTerm);
+            });
+
+            renderMobs(filteredMobs);
+            if (filteredMobs.length > 0) {
+                showMessage(`Encontrados ${filteredMobs.length} mobs.`, false, searchMessage);
+            } else {
+                showMessage('Nenhum mob encontrado com esta pesquisa.', true, searchMessage);
+            }
+        }
+
+        // --- Logout Functionality ---
+        logoutButton.addEventListener('click', () => {
+            showValidatorView(); // Volta para a tela do validador
+            console.log("Sessão encerrada. Limpando dados locais.");
+        });
+
+        // Event Listeners for search
+        searchMobButton.addEventListener('click', searchMobs);
+        mobSearchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                searchMobs();
+            }
+        });
+
+        // The initial call to initCombinedApp is now handled by onAuthStateChanged.
+        // This ensures Firebase is ready before attempting token validation.
     </script>
 </body>
 </html>
