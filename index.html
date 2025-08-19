@@ -209,6 +209,7 @@
         console.log("Firebase SDKs importados.");
 
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
+            // INÍCIO DA SEÇÃO DE CONFIGURAÇÃO DO FIREBASE - VERIFIQUE ESTES VALORES
             apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
             authDomain: "bossdv-72d16.firebaseapp.com",
             databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
@@ -216,6 +217,7 @@
             storageBucket: "bossdv-72d16.firebasestorage.app",
             messagingSenderId: "141528827265",
             appId: "1:141528827265:web:531737e108e484a0869480"
+            // FIM DA SEÇÃO DE CONFIGURAÇÃO DO FIREBASE
         });
         const firebaseConfig = JSON.parse(firebaseConfigString);
         console.log("Firebase Config carregada:", firebaseConfig);
