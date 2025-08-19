@@ -359,7 +359,7 @@
                     // Certificar-se de que o carregador é escondido e o conteúdo principal exibido, mesmo em erro de auth
                     loadingOverlay.classList.add('hidden');
                     combinedAppContent.classList.remove('hidden');
-                    showValidatorView();
+                    showValidatorView(); // Mostra o validador em caso de falha de autenticação
                     return;
                 }
             } else {
@@ -406,207 +406,13 @@
                 const lastValidatedDeviceId = localStorage.getItem('lastValidatedDeviceId');
 
                 console.log("initCombinedApp: 1. Device ID do localStorage (currentDeviceId):", currentDeviceId);
-                console.log("initCombinedApp: 2. Token do loca    </div>
-    </div>
-
-    <!-- Script JavaScript para a lógica da aplicação combinada -->
-    <script type="module">
-        console.clear(); // Limpa o console do navegador para depuração mais fácil
-
-        // --- Firebase Setup ---
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-
-        const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
-            apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
-            authDomain: "bossdv-72d16.firebaseapp.com",
-            databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
-            projectId: "bossdv-72d16",
-            storageBucket: "bossdv-72d16.firebasestorage.app",
-            messagingSenderId: "141528827265",
-            appId: "1:141528827265:web:531737e108e484a0869480"
-        });
-        const firebaseConfig = JSON.parse(firebaseConfigString);
-        const appId = 'default-app-id'; // Consistente com a estrutura do Firestore
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- Elementos HTML ---
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const combinedAppContent = document.getElementById('combinedAppContent');
-        const validatorSection = document.getElementById('validatorSection');
-        const bossSearchSection = document.getElementById('bossSearchSection');
-        const copyrightText = document.getElementById('copyright');
-        
-        // Validador de Token Elements
-        // Removido: const userInfoValidator = document.getElementById('user-info-validator');
-        // Removido: const deviceIdDisplay = document.getElementById('device-id-display');
-        const tokenInput = document.getElementById('tokenInput');
-        const validateTokenButton = document.getElementById('validateTokenButton');
-        const validationResultDisplay = document.getElementById('validationResult');
-        const tokenDetailsDisplay = document.getElementById('tokenDetails');
-        const messageValidator = document.getElementById('message-validator');
-
-        // Pesquisa de Mobs Elements
-        const mobSearchInput = document.getElementById('mobSearchInput');
-        const searchMobButton = document.getElementById('searchMobButton');
-        const mobListDiv = document.getElementById('mob-list');
-        const loadingMobsMessage = document.getElementById('loading-mobs-message');
-        const searchMessage = document.getElementById('searchMessage');
-        const logoutButton = document.getElementById('logoutButton'); // Novo botão Sair
-
-        // Modal Elements
-        const customConfirmModal = document.getElementById('customConfirmModal');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalInput = document.getElementById('modalInput');
-        const modalConfirmButton = document.getElementById('modalConfirmButton');
-        const modalCancelButton = document.getElementById('modalCancelButton');
-        const modalButtons = document.getElementById('modalButtons');
-
-        // --- Global Variables ---
-        let currentDeviceId = '';
-        let allMobsData = []; // Para armazenar todos os dados dos mobs
-        const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
-
-        // --- Utility Functions ---
-
-        function showMessage(text, isError = false, targetElement = messageValidator) {
-            targetElement.textContent = text;
-            if (isError) {
-                targetElement.className = 'text-center text-sm mt-4 text-red-600 font-medium';
-            } else {
-                targetElement.className = 'text-center text-sm mt-4 text-green-600 font-medium';
-            }
-        }
-
-        function formatTimestamp(timestamp) {
-            const date = new Date(timestamp);
-            return `${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR')}`;
-        }
-
-        function customModal(message, type = 'alert', inputOptions = {}) {
-            return new Promise((resolve) => {
-                modalMessage.textContent = message;
-                customConfirmModal.classList.remove('hidden');
-
-                if (type === 'prompt') {
-                    modalInput.classList.remove('hidden');
-                    modalInput.type = inputOptions.type || 'text';
-                    modalInput.placeholder = inputOptions.placeholder || '';
-                    modalInput.value = inputOptions.value || '';
-                    modalInput.min = inputOptions.min || '';
-                    modalInput.max = inputOptions.max || '';
-                    modalInput.focus();
-                } else {
-                    modalInput.classList.add('hidden');
-                    modalInput.value = '';
-                }
-
-                modalButtons.classList.remove('hidden');
-                modalConfirmButton.classList.remove('hidden');
-                modalCancelButton.classList.remove('hidden');
-
-                modalConfirmButton.onclick = null;
-                modalCancelButton.onclick = null;
-
-                if (type === 'confirm' || type === 'prompt') {
-                    modalConfirmButton.onclick = () => {
-                        customConfirmModal.classList.add('hidden');
-                        if (type === 'prompt') {
-                            resolve(modalInput.value);
-                        } else {
-                            resolve(true);
-                        }
-                    };
-                    modalCancelButton.onclick = () => {
-                        customConfirmModal.classList.add('hidden');
-                        resolve(false);
-                    };
-                } else {
-                    modalConfirmButton.textContent = 'OK';
-                    modalCancelButton.classList.add('hidden');
-                    modalConfirmButton.onclick = () => {
-                        customConfirmModal.classList.add('hidden');
-                        resolve(true);
-                        modalConfirmButton.textContent = 'Confirmar';
-                    };
-                }
-            });
-        }
-
-        async function getDeviceId() {
-            let deviceId = localStorage.getItem('deviceId');
-            if (!deviceId) {
-                deviceId = crypto.randomUUID();
-                localStorage.setItem('deviceId', deviceId);
-            }
-            return deviceId;
-        }
-
-        // --- Firebase Auth State Listener ---
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                try {
-                    await signInAnonymously(auth);
-                    user = auth.currentUser;
-                    console.log("Sessão anónima iniciada.");
-                } catch (error) {
-                    console.error("Erro na autenticação anónima:", error);
-                    showMessage('Erro na autenticação. Por favor, tente novamente.', true);
-                    // Removido: userInfoValidator.textContent = 'Erro ao carregar sessão.';
-                    return;
-                }
-            }
-            // Removido: userInfoValidator.textContent = `Sessão Iniciada como: ${user.isAnonymous ? 'Anónimo' : user.email}`;
-            currentDeviceId = await getDeviceId();
-            // Removido: deviceIdDisplay.textContent = currentDeviceId;
-
-            // Após a autenticação, tenta validar o acesso via localStorage/Firestore
-            initCombinedApp();
-        });
-
-        // --- Core Application Logic ---
-
-        // Function to switch between validator and boss search views
-        function showAccessGrantedView() {
-            validatorSection.classList.add('hidden');
-            bossSearchSection.classList.remove('hidden');
-            logoutButton.classList.remove('hidden'); // Mostra o botão Sair
-            loadMobsData(); // Carrega os dados dos mobs quando o acesso é concedido
-        }
-
-        function showValidatorView() {
-            validatorSection.classList.remove('hidden');
-            bossSearchSection.classList.add('hidden');
-            logoutButton.classList.add('hidden'); // Esconde o botão Sair
-            tokenInput.value = ''; // Limpa o campo do token
-            validationResultDisplay.textContent = '';
-            tokenDetailsDisplay.textContent = '';
-            messageValidator.textContent = '';
-            localStorage.removeItem('lastValidatedToken');
-            localStorage.removeItem('lastValidatedDeviceId');
-        }
-
-        async function initCombinedApp() {
-            loadingOverlay.classList.remove('hidden'); // Always show loader at start
-            console.log("--- Iniciando initCombinedApp ---");
-
-            try {
-                const currentDeviceId = await getDeviceId();
-                const lastValidatedToken = localStorage.getItem('lastValidatedToken');
-                const lastValidatedDeviceId = localStorage.getItem('lastValidatedDeviceId');
-
-                console.log("1. Device ID do localStorage (currentDeviceId):", currentDeviceId);
-                console.log("2. Token do localStorage (lastValidatedToken):", lastValidatedToken);
-                console.log("3. Device ID do localStorage (lastValidatedDeviceId):", lastValidatedDeviceId);
+                console.log("initCombinedApp: 2. Token do localStorage (lastValidatedToken):", lastValidatedToken);
+                console.log("initCombinedApp: 3. Device ID do localStorage (lastValidatedDeviceId):", lastValidatedDeviceId);
 
                 let accessGranted = false;
 
                 if (lastValidatedToken && lastValidatedDeviceId === currentDeviceId) {
-                    console.log("4. Dados de validação encontrados no localStorage. Verificando no Firestore...");
+                    console.log("initCombinedApp: 4. Dados de validação encontrados e consistentes no localStorage. Verificando no Firestore...");
                     
                     const tokensCollectionPath = `artifacts/${appId}/public/data/generatedTokens`;
                     const tokensCollectionRef = collection(db, tokensCollectionPath);
@@ -616,62 +422,62 @@
                         where("token", "==", lastValidatedToken),
                         where("deviceId", "==", currentDeviceId)
                     );
-                    console.log("5. Executando query no Firestore com token E deviceId. Token:", lastValidatedToken, "DeviceId:", currentDeviceId);
+                    console.log("initCombinedApp: 5. Executando query no Firestore com token E deviceId. Token:", lastValidatedToken, "DeviceId:", currentDeviceId);
 
                     const querySnapshot = await getDocs(q);
-                    console.log("6. Resultados da query (número de documentos encontrados):", querySnapshot.docs.length);
+                    console.log("initCombinedApp: 6. Resultados da query (número de documentos encontrados):", querySnapshot.docs.length);
 
                     if (!querySnapshot.empty) {
                         const tokenDoc = querySnapshot.docs[0];
                         const tokenData = tokenDoc.data();
-                        console.log("7. Dados completos do token do Firestore:", tokenData);
+                        console.log("initCombinedApp: 7. Dados completos do token do Firestore:", tokenData);
                         
                         const now = Date.now();
                         const isExpired = tokenData.expirationTimestamp <= now;
-                        console.log("8. Verificando expiração: Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now, "Expirado?", isExpired);
+                        console.log("initCombinedApp: 8. Verificando expiração: Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now, "Expirado?", isExpired);
 
                         if (!isExpired) {
                             accessGranted = true;
-                            console.log("9. Acesso concedido: Token válido e vinculado encontrado no Firestore via localStorage.");
+                            console.log("initCombinedApp: 9. Acesso concedido: Token válido e vinculado encontrado no Firestore via localStorage.");
                         } else {
-                            console.log("9. Acesso negado: Token do localStorage expirado no Firestore. Limpando localStorage.");
+                            console.log("initCombinedApp: 9. Acesso negado: Token do localStorage expirado no Firestore. Limpando localStorage.");
                             localStorage.removeItem('lastValidatedToken');
                             localStorage.removeItem('lastValidatedDeviceId');
                         }
                     } else {
-                        console.log("6. Acesso negado: Token do localStorage não encontrado ou deviceId não corresponde no Firestore. Limpando localStorage.");
+                        console.log("initCombinedApp: 6. Acesso negado: Token do localStorage não encontrado ou deviceId não corresponde no Firestore. Limpando localStorage.");
                         localStorage.removeItem('lastValidatedToken');
                         localStorage.removeItem('lastValidatedDeviceId');
                     }
                 } else {
-                    console.log("4. Dados de validação ausentes ou inconsistentes no localStorage. Exibindo validador.");
+                    console.log("initCombinedApp: 4. Dados de validação ausentes ou inconsistentes no localStorage. Exibindo validador.");
                 }
 
                 if (accessGranted) {
                     showAccessGrantedView();
-                    console.log("10. Exibindo tela de pesquisa de mobs.");
+                    console.log("initCombinedApp: 10. Exibindo tela de pesquisa de mobs.");
                 } else {
                     showValidatorView();
-                    console.log("10. Exibindo tela do validador de token.");
+                    console.log("initCombinedApp: 10. Exibindo tela do validador de token.");
                 }
 
-                loadingOverlay.classList.add('hidden'); // Hide loader once init is done
-                combinedAppContent.classList.remove('hidden'); // Show main content
             } catch (error) {
                 console.error("ERRO FATAL (initCombinedApp):", error);
-                loadingOverlay.classList.add('hidden');
                 customModal('Erro ao iniciar. Por favor, recarregue a página. Verifique a consola para detalhes.', 'alert');
                 showValidatorView(); // Fallback to validator view
-                combinedAppContent.classList.remove('hidden'); // Show main content
+            } finally {
+                loadingOverlay.classList.add('hidden'); // ALWAYS hide loader
+                combinedAppContent.classList.remove('hidden'); // ALWAYS show main content container
+                console.log("initCombinedApp: Finalizado. Carregador escondido, conteúdo principal exibido.");
             }
         }
 
-        // --- Token Validation Logic (from index.html) ---
+        // --- Token Validation Logic ---
         validateTokenButton.addEventListener('click', async () => {
             const tokenValue = tokenInput.value.trim();
             validationResultDisplay.textContent = '';
             tokenDetailsDisplay.textContent = '';
-            showMessage(''); // Clear previous messages
+            showMessage('');
 
             if (!tokenValue) {
                 showMessage('Por favor, insira um token para validar.', true, messageValidator);
@@ -688,7 +494,7 @@
                 }
 
                 const tokensCollectionRef = collection(db, `artifacts/${appId}/public/data/generatedTokens`);
-                console.log(`[VALIDADOR] A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`);
+                console.log(`[VALIDADOR - Click] A procurar token na coleção: artifacts/${appId}/public/data/generatedTokens com valor: ${tokenValue}`);
                 const q = query(tokensCollectionRef, where("token", "==", tokenValue));
                 const querySnapshot = await getDocs(q);
 
@@ -729,7 +535,7 @@
                         showMessage('Você pode continuar a usar este token.', false, messageValidator);
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        showAccessGrantedView(); // Show boss search section
+                        showAccessGrantedView();
                     } else {
                         validationResultDisplay.textContent = 'Token Já Vinculado a Outro Dispositivo!';
                         validationResultDisplay.style.color = 'orange';
@@ -749,7 +555,7 @@
                         showMessage('O token agora está vinculado a este dispositivo e não pode ser usado em outro.', false, messageValidator);
                         localStorage.setItem('lastValidatedToken', tokenValue);
                         localStorage.setItem('lastValidatedDeviceId', currentDeviceId);
-                        showAccessGrantedView(); // Show boss search section
+                        showAccessGrantedView();
                     } else {
                         validationResultDisplay.textContent = 'Token Válido (Não Vinculado)';
                         validationResultDisplay.style.color = 'white';
@@ -769,7 +575,7 @@
             }
         });
 
-        // --- Mob Search Logic (from boss.html) ---
+        // --- Mob Search Logic ---
 
         async function loadMobsData() {
             loadingMobsMessage.textContent = 'Carregando dados dos mobs...';
@@ -835,7 +641,7 @@
 
         // --- Logout Functionality ---
         logoutButton.addEventListener('click', () => {
-            showValidatorView(); // Volta para a tela do validador
+            showValidatorView();
             console.log("Sessão encerrada. Limpando dados locais.");
         });
 
