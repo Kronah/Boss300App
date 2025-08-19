@@ -116,8 +116,8 @@
         <!-- Seção do Validador de Token (Visível para não autenticados/sem token) -->
         <div id="validatorSection">
             <h1 class="text-3xl font-bold text-white mb-6">Validador de Token</h1>
-            <p class="text-white text-lg mb-4" id="user-info-validator">Aguardando autenticação...</p>
-            <p class="text-white text-sm mb-4">Seu ID de Dispositivo: <span id="device-id-display" class="font-semibold break-all">Carregando...</span></p>
+            <!-- Removido: <p class="text-white text-lg mb-4" id="user-info-validator">Aguardando autenticação...</p> -->
+            <!-- Removido: <p class="text-white text-sm mb-4">Seu ID de Dispositivo: <span id="device-id-display" class="font-semibold break-all">Carregando...</span></p> -->
 
             <div class="space-y-4 mb-6">
                 <div>
@@ -232,8 +232,8 @@
         const copyrightText = document.getElementById('copyright');
         
         // Validador de Token Elements
-        const userInfoValidator = document.getElementById('user-info-validator');
-        const deviceIdDisplay = document.getElementById('device-id-display');
+        // Removido: const userInfoValidator = document.getElementById('user-info-validator');
+        // Removido: const deviceIdDisplay = document.getElementById('device-id-display');
         const tokenInput = document.getElementById('tokenInput');
         const validateTokenButton = document.getElementById('validateTokenButton');
         const validationResultDisplay = document.getElementById('validationResult');
@@ -346,13 +346,13 @@
                 } catch (error) {
                     console.error("Erro na autenticação anónima:", error);
                     showMessage('Erro na autenticação. Por favor, tente novamente.', true);
-                    userInfoValidator.textContent = 'Erro ao carregar sessão.';
+                    // Removido: userInfoValidator.textContent = 'Erro ao carregar sessão.';
                     return;
                 }
             }
-            userInfoValidator.textContent = `Sessão Iniciada como: ${user.isAnonymous ? 'Anónimo' : user.email}`;
+            // Removido: userInfoValidator.textContent = `Sessão Iniciada como: ${user.isAnonymous ? 'Anónimo' : user.email}`;
             currentDeviceId = await getDeviceId();
-            deviceIdDisplay.textContent = currentDeviceId;
+            // Removido: deviceIdDisplay.textContent = currentDeviceId;
 
             // Após a autenticação, tenta validar o acesso via localStorage/Firestore
             initCombinedApp();
