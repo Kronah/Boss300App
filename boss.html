@@ -1,47 +1,55 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boss 300 - Pesquisa de Mobs</title>
+    <!-- Inclui o Tailwind CSS para estilização fácil -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Define as fontes Inter (para texto geral) e Cinzel Decorative (para títulos) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Inclui Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif; /* Fonte padrão para todo o corpo */
             background-image:
-                url('https://lh4.googleusercontent.com/_tiEzXvf6uDRZ1x-lkpcGl8tfFogCXcT9Qo5awoc_5C6oK_bIWabqjfGxafC48vLij-g6KOKSdgQg-_0gmKn99uwOPTY69Q4cghy3irecNGVHvz5hNHy6aqd5Fv3cqln1uu0eN0EFnJJp3SJfWXa2A4');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            display: flex;
+                url('https://lh4.googleusercontent.com/_tiEzXvf6uDRZ1x-lkpcGl8tfFogCXcT9Qo5awoc_5C6oK_bIWabqjfGxafC48vLij-g6KOKSdgQg-_0gmKn99uwOPTY69Q4cghy3irecNGVHvz5hNHy6aqd5Fv3cqln1uu0eN0EFnJJp3SJfWXa2A4'); /* Imagem de fundo do exército de Esparta */
+            background-size: cover; /* Faz a imagem cobrir todo o fundo */
+            background-position: center; /* Centraliza a imagem no fundo */
+            background-repeat: no-repeat; /* Evita que a imagem se repita */
+            background-attachment: fixed; /* Mantém a imagem fixa ao rolar */
+            display: flex; /* Para posicionar o conteúdo */
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Centraliza verticalmente o conteúdo */
             min-height: 100vh;
             padding: 1rem;
         }
+        /* Aplica a fonte "300" (Cinzel Decorative) aos títulos */
         h1, h2 {
             font-family: 'Cinzel Decorative', serif;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra para realçar o texto */
         }
+        /* Estilo para painel de conteúdo */
         .content-panel {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            color: #ffffff;
-            position: relative;
+            background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+            padding: 2rem; /* Espaçamento interno */
+            border-radius: 0.5rem; /* Cantos arredondados */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Sombra */
+            color: #ffffff; /* Cor do texto padrão para este painel */
+            position: relative; /* Para posicionamento de elementos internos */
             width: 90%;
-            max-width: 800px;
+            max-width: 800px; /* Aumentado para melhor visualização da lista */
         }
+        /* Estilo para cada cartão de mob na lista */
         .mob-card {
-            background-color: #ffffff;
-            border-left: 4px solid #b91c1c;
-            color: #1a202c;
+            background-color: #ffffff; /* Fundo branco sólido */
+            border-left: 4px solid #b91c1c; /* Borda vermelha para destaque */
+            color: #1a202c; /* Cor do texto padrão para o cartão do mob */
         }
+
+        /* Estilos para o Modal Personalizado (copiados para consistência) */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -64,6 +72,8 @@
             text-align: center;
             position: relative;
         }
+
+        /* Estilo para o loader (tela de carregamento) */
         .loader-overlay {
             position: fixed;
             top: 0;
@@ -82,7 +92,7 @@
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top: 4px solid #b91c1c;
+            border-top: 4px solid #b91c1c; /* Cor vermelha para o spinner */
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
@@ -95,11 +105,13 @@
     </style>
 </head>
 <body class="p-4">
+    <!-- Overlay de Carregamento Inicial -->
     <div id="loadingOverlay" class="loader-overlay">
         <div class="spinner"></div>
         <p>Verificando acesso...</p>
     </div>
 
+    <!-- Conteúdo Principal da Pesquisa de Mobs -->
     <div id="mainContent" class="content-panel mt-16 md:mt-4 text-center hidden">
         <h1 class="text-3xl font-bold text-white mb-6">Boss 300 - Pesquisa de Mobs</h1>
         <p class="text-white text-lg mb-4">Encontre seus adversários espartanos!</p>
@@ -107,24 +119,35 @@
         <div class="space-y-4 mb-6">
             <div>
                 <label for="mobSearchInput" class="block text-white text-sm font-semibold mb-2 text-left">Pesquisar por Nome ou Número</label>
-                <input type="text" id="mobSearchInput" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black" placeholder="Ex: Leonidas, 45">
+                <input
+                    type="text"
+                    id="mobSearchInput"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-700 focus:border-red-700 transition duration-200 placeholder-gray-600 text-black"
+                    placeholder="Ex: Leonidas, 45"
+                >
             </div>
-            <button id="searchMobButton" class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105">
+            <button
+                id="searchMobButton"
+                class="w-full bg-red-800 text-white py-2 px-4 rounded-md hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-50 transition duration-300 transform hover:scale-105"
+            >
                 <i class="fas fa-search mr-2"></i> Pesquisar Mob
             </button>
-            <p id="searchMessage" class="text-center text-sm mt-4"></p>
+            <p id="searchMessage" class="text-center text-sm mt-4"></p> <!-- Elemento para exibir mensagens de feedback -->
         </div>
 
         <h2 class="text-2xl font-bold text-white mb-4">Resultados da Pesquisa</h2>
         <div id="mob-list" class="space-y-4 mb-6 text-left max-h-96 overflow-y-auto p-4 rounded-md border border-gray-400">
+            <!-- Mobs serão carregados aqui -->
             <p class="text-white text-center" id="loading-mobs-message">Carregando dados dos mobs...</p>
         </div>
     </div>
 
+    <!-- Direitos autorais (agora no rodapé) -->
     <p class="text-center text-white text-xs mt-6 hidden" id="copyright">
         &copy; 2025 CaMoMiLa. Todos os direitos reservados.
     </p>
 
+    <!-- Modal para Alertas (copiado para consistência) -->
     <div id="customAlertModal" class="custom-modal-overlay hidden">
         <div class="custom-modal-content">
             <p id="modalMessage" class="text-black text-lg mb-4"></p>
@@ -132,87 +155,251 @@
         </div>
     </div>
 
+    <!-- Script JavaScript para a lógica da página -->
     <script type="module">
+        // Limpa o console do navegador para depuração mais fácil
+        console.clear(); 
+
+        // Importa as funções necessárias do Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+        // URL do ficheiro JSON no GitHub (RAW content)
+        const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
+        let allMobsData = []; // Para armazenar todos os dados dos mobs
+
+        // URL base do repositório do Validador de Tokens (ASSUMIMOS QUE ESTÁ NO MESMO REPOSITÓRIO AGORA)
+        const validatorAppBaseUrl = 'https://kronah.github.io/Boss300App/'; // Ajuste se o validador estiver noutro repositório
+
+        // Variáveis globais Firebase (ajustar conforme o seu projeto Firebase)
+        const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
+            apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
+            authDomain: "bossdv-72d16.firebaseapp.com",
+            databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
+            projectId: "bossdv-72d16",
+            storageBucket: "bossdv-72d16.firebasestorage.app",
+            messagingSenderId: "141528827265",
+            appId: "1:141528827265:web:531737e108e484a0869480"
+        });
+        const firebaseConfig = JSON.parse(firebaseConfigString);
+        // Usa 'default-app-id' para coincidir com o caminho onde os tokens são guardados.
+        const appId = 'default-app-id';
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Referências aos elementos HTML
         const mobSearchInput = document.getElementById('mobSearchInput');
         const searchMobButton = document.getElementById('searchMobButton');
         const mobListDiv = document.getElementById('mob-list');
         const loadingMobsMessage = document.getElementById('loading-mobs-message');
         const searchMessage = document.getElementById('searchMessage');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const mainContent = document.getElementById('mainContent');
-        const copyrightText = document.getElementById('copyright');
+        const loadingOverlay = document.getElementById('loadingOverlay'); // Overlay de carregamento
+        const mainContent = document.getElementById('mainContent');     // Conteúdo principal
+        const copyrightText = document.getElementById('copyright');     // Texto de copyright
 
-        const JSON_DATA_URL = 'https://raw.githubusercontent.com/Kronah/mob-data/main/dados.json';
-        let allMobsData = [];
+        // Referências para o Modal Personalizado (simplificado para alertas)
+        const customAlertModal = document.getElementById('customAlertModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalOkButton = document.getElementById('modalOkButton');
 
-        function showMessage(text, isError=false){
+        // --- Funções de UI e Mensagens ---
+
+        function showMessage(text, isError = false) {
             searchMessage.textContent = text;
-            searchMessage.className = `text-center text-sm mt-4 ${isError?'text-red-600 font-medium':'text-green-600 font-medium'}`;
-        }
-
-        async function loadMobsData(){
-            loadingMobsMessage.textContent='Carregando dados dos mobs...';
-            try {
-                const response = await fetch(JSON_DATA_URL);
-                allMobsData = await response.json();
-                loadingMobsMessage.classList.add('hidden');
-                showMessage('Dados dos mobs carregados com sucesso. Digite para pesquisar.');
-                renderMobs(allMobsData);
-            } catch(err){
-                console.error(err);
-                loadingMobsMessage.textContent='Erro ao carregar dados dos mobs.';
-                showMessage('Erro ao carregar dados dos mobs.',true);
+            if (isError) {
+                searchMessage.className = 'text-center text-sm mt-4 text-red-600 font-medium';
+            } else {
+                searchMessage.className = 'text-center text-sm mt-4 text-green-600 font-medium';
             }
         }
 
-        function renderMobs(mobs){
-            mobListDiv.innerHTML='';
-            if(mobs.length===0){ mobListDiv.innerHTML='<p class="text-white text-center">Nenhum mob encontrado.</p>'; return; }
-            mobs.forEach(mob=>{
-                const card=document.createElement('div');
-                card.className='mob-card p-4 mb-2 rounded-md shadow-sm';
-                card.innerHTML=`
-                    <p class="font-semibold text-black text-base break-all">Número: <span class="text-gray-800">${mob['Número']||'N/A'}</span></p>
-                    <p class="text-black text-sm">Nome do Mob: <span class="text-gray-700">${mob['Nome do Mob']||'N/A'}</span></p>
-                    <p class="text-black text-sm">Pontos: <span class="text-gray-700">${mob['Pontos']!==null?mob['Pontos']:'N/A'}</span></p>
-                    <p class="text-black text-sm">Arquivo: <span class="text-gray-700">${mob['Arquivo']||'N/A'}</span></p>
-                `;
-                mobListDiv.appendChild(card);
+        function customAlert(message) {
+            return new Promise((resolve) => {
+                modalMessage.textContent = message;
+                customAlertModal.classList.remove('hidden');
+                modalOkButton.onclick = () => {
+                    customAlertModal.classList.add('hidden');
+                    resolve(true);
+                };
             });
         }
 
-        function searchMobs(){
-            const term = mobSearchInput.value.trim().toLowerCase();
-            if(term===''){ renderMobs(allMobsData); showMessage('Exibindo todos os mobs.'); return; }
-            const filtered = allMobsData.filter(mob=>{
-                const num = mob['Número']?String(mob['Número']).toLowerCase():'';
-                const name = mob['Nome do Mob']?mob['Nome do Mob'].toLowerCase():'';
-                return num.includes(term)||name.includes(term);
-            });
-            renderMobs(filtered);
-            showMessage(filtered.length>0?`Encontrados ${filtered.length} mobs.`:'Nenhum mob encontrado.',filtered.length===0);
+        // Função para carregar os dados do JSON
+        async function loadMobsData() {
+            loadingMobsMessage.textContent = 'Carregando dados dos mobs...';
+            try {
+                const response = await fetch(JSON_DATA_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
+                }
+                allMobsData = await response.json();
+                loadingMobsMessage.classList.add('hidden');
+                showMessage('Dados dos mobs carregados com sucesso. Digite para pesquisar.', false);
+                renderMobs(allMobsData); // Renderiza todos os mobs inicialmente
+            } catch (error) {
+                console.error("Erro ao carregar dados dos mobs:", error);
+                loadingMobsMessage.textContent = 'Erro ao carregar dados dos mobs.';
+                showMessage('Erro ao carregar dados dos mobs. Verifique a consola.', true);
+                customAlert('Não foi possível carregar os dados dos mobs. Verifique sua conexão ou o URL do arquivo JSON.');
+            }
         }
 
-        async function initBossPage(){
-            loadingOverlay.classList.remove('hidden');
-            // --- CORREÇÃO: verifica token e deviceId do localStorage ---
-            const validatedToken = localStorage.getItem('validatedToken');
-            const validatedDeviceId = localStorage.getItem('validatedDeviceId');
-
-            if(!validatedToken || !validatedDeviceId){
-                window.location.href='index.html';
+        // Função para renderizar os mobs na UI
+        function renderMobs(mobs) {
+            mobListDiv.innerHTML = ''; // Limpa a lista existente
+            if (mobs.length === 0) {
+                mobListDiv.innerHTML = '<p class="text-white text-center">Nenhum mob encontrado com os critérios de pesquisa.</p>';
                 return;
             }
 
-            loadingOverlay.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            copyrightText.classList.remove('hidden');
-            loadMobsData();
+            mobs.forEach(mob => {
+                const mobCard = document.createElement('div');
+                mobCard.className = 'mob-card p-4 mb-2 rounded-md shadow-sm';
+                mobCard.innerHTML = `
+                    <p class="font-semibold text-black text-base break-all">Número: <span class="text-gray-800">${mob['Número'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Nome do Mob: <span class="text-gray-700">${mob['Nome do Mob'] || 'N/A'}</span></p>
+                    <p class="text-black text-sm">Pontos: <span class="text-gray-700">${mob['Pontos'] !== null ? mob['Pontos'] : 'N/A'}</span></p>
+                    <p class="text-black text-sm">Arquivo: <span class="text-gray-700">${mob['Arquivo'] || 'N/A'}</span></p>
+                `;
+                mobListDiv.appendChild(mobCard);
+            });
         }
 
-        searchMobButton.addEventListener('click',searchMobs);
-        mobSearchInput.addEventListener('keyup',(e)=>{if(e.key==='Enter') searchMobs();});
-        window.onload=initBossPage;
+        // Função de pesquisa
+        function searchMobs() {
+            const searchTerm = mobSearchInput.value.trim().toLowerCase();
+            if (searchTerm === '') {
+                renderMobs(allMobsData); // Mostra todos se a pesquisa estiver vazia
+                showMessage('Exibindo todos os mobs.', false);
+                return;
+            }
+
+            const filteredMobs = allMobsData.filter(mob => {
+                const mobNumber = mob['Número'] ? String(mob['Número']).toLowerCase() : '';
+                const mobName = mob['Nome do Mob'] ? String(mob['Nome do Mob']).toLowerCase() : '';
+
+                return mobNumber.includes(searchTerm) || mobName.includes(searchTerm);
+            });
+
+            renderMobs(filteredMobs);
+            if (filteredMobs.length > 0) {
+                showMessage(`Encontrados ${filteredMobs.length} mobs.`, false);
+            } else {
+                showMessage('Nenhum mob encontrado com esta pesquisa.', true);
+            }
+        }
+
+        // Função para obter o ID do dispositivo
+        async function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = crypto.randomUUID(); // Gera um UUID único para o dispositivo
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        // Função principal de inicialização e validação de acesso
+        async function initBossPage() {
+            loadingOverlay.classList.remove('hidden'); // Mostra o loader
+            console.log("--- Iniciando initBossPage (boss.html) ---");
+
+            try {
+                // Obtém o deviceId do localStorage (gerado ou obtido pelo validador)
+                const currentDeviceId = await getDeviceId();
+                const lastValidatedToken = localStorage.getItem('lastValidatedToken');
+                const lastValidatedDeviceId = localStorage.getItem('lastValidatedDeviceId');
+
+                console.log("1. Device ID do localStorage (currentDeviceId):", currentDeviceId);
+                console.log("2. Token do localStorage (lastValidatedToken):", lastValidatedToken);
+                console.log("3. Device ID do localStorage (lastValidatedDeviceId):", lastValidatedDeviceId);
+
+                let accessGranted = false;
+
+                // 4. Verificação de dados no localStorage para acesso rápido
+                if (lastValidatedToken && lastValidatedDeviceId && lastValidatedDeviceId === currentDeviceId) {
+                    console.log("4. Dados de validação encontrados no localStorage. Iniciando validação Firebase...");
+                    // Autenticação anónima para interagir com o Firestore
+                    await signInAnonymously(auth);
+                    console.log("5. Autenticação anónima bem-sucedida em boss.html.");
+
+                    const tokensCollectionPath = `artifacts/${appId}/public/data/generatedTokens`;
+                    const tokensCollectionRef = collection(db, tokensCollectionPath);
+                    
+                    // Consulta o Firestore para o token específico E o deviceId para segurança total
+                    const q = query(
+                        tokensCollectionRef, 
+                        where("token", "==", lastValidatedToken),
+                        where("deviceId", "==", currentDeviceId)
+                    );
+                    console.log("6. Executando query no Firestore com token E deviceId. Token:", lastValidatedToken, "DeviceId:", currentDeviceId);
+
+                    const querySnapshot = await getDocs(q);
+                    console.log("7. Resultados da query (número de documentos encontrados):", querySnapshot.docs.length);
+
+                    if (!querySnapshot.empty) {
+                        const tokenDoc = querySnapshot.docs[0];
+                        const tokenData = tokenDoc.data();
+                        console.log("8. Dados completos do token do Firestore:", tokenData); // Log dos dados do token
+                        
+                        const now = Date.now();
+                        const isExpired = tokenData.expirationTimestamp <= now;
+                        console.log("9. Verificando expiração: Timestamp de expiração:", tokenData.expirationTimestamp, "Agora:", now, "Expirado?", isExpired);
+
+                        if (!isExpired) {
+                            accessGranted = true;
+                            console.log("10. Acesso concedido em boss.html: Token válido e vinculado encontrado no Firestore via localStorage.");
+                        } else {
+                            console.log("10. Acesso negado em boss.html: Token do localStorage expirado no Firestore. Limpando localStorage.");
+                            localStorage.removeItem('lastValidatedToken'); // Limpar token expirado
+                            localStorage.removeItem('lastValidatedDeviceId');
+                        }
+                    } else {
+                        console.log("8. Acesso negado em boss.html: Token do localStorage não encontrado ou deviceId não corresponde no Firestore. Limpando localStorage.");
+                        localStorage.removeItem('lastValidatedToken'); // Limpar token inválido
+                        localStorage.removeItem('lastValidatedDeviceId');
+                    }
+                } else {
+                    console.log("4. Dados de validação ausentes ou inconsistentes no localStorage. Redirecionando para validação manual.");
+                    // Não há token válido no localStorage, ou deviceId não corresponde.
+                    // Redireciona para o validador.
+                }
+
+                if (accessGranted) {
+                    loadingOverlay.classList.add('hidden'); // Esconde o loader
+                    mainContent.classList.remove('hidden'); // Mostra o conteúdo principal
+                    copyrightText.classList.remove('hidden'); // Mostra os direitos autorais
+                    loadMobsData(); // Carrega os dados dos mobs
+                    console.log("11. Conteúdo principal exibido e dados dos mobs a serem carregados.");
+                } else {
+                    // Se o acesso não for concedido, redireciona para a página do validador
+                    console.log("12. Acesso não concedido em boss.html. Redirecionando para:", `${validatorAppBaseUrl}index.html`);
+                    window.location.href = `${validatorAppBaseUrl}index.html`;
+                }
+
+            } catch (error) {
+                console.error("ERRO FATAL (boss.html): na inicialização da página ou validação de acesso:", error);
+                loadingOverlay.classList.add('hidden'); // Esconde o loader
+                customAlert('Erro ao verificar o acesso. Redirecionando para o validador. Verifique a consola.');
+                // Redireciona em caso de erro grave durante a verificação
+                window.location.href = `${validatorAppBaseUrl}index.html`;
+            }
+        }
+
+        // Event Listeners
+        searchMobButton.addEventListener('click', searchMobs);
+        mobSearchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                searchMobs();
+            }
+        });
+
+        // Inicia a validação de acesso quando a página é carregada
+        window.onload = initBossPage;
     </script>
 </body>
 </html>
